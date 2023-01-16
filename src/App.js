@@ -2,7 +2,7 @@ import logo from './logo.svg';
 
 import './App.css';
 import { ethers } from 'ethers'
-import { FunWallet, AAVEWithdrawal, AccessControlSchema } from "@fun-wallet/sdk"
+import { FunWallet, AAVEWithdrawal, AccessControlSchema } from "@fun-wallet-dev/sdk"
 import { useEffect, useState } from 'react';
 const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
 
