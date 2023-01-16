@@ -66,7 +66,7 @@ function App() {
 
     // After some time, execute the Aave withdrawal action
 
-    const executionReceipt = await FunWallet.deployActionTx(aaveActionTx, chain)
+    const executionReceipt = await FunWallet.deployActionTx(aaveActionTx)
     console.log("Execution Succesful:\n", executionReceipt)
 
   }
