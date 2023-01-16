@@ -1,65 +1,73 @@
-import logo from './logo.svg';
 import './App.css';
-import {ethers}  from 'ethers'
-import { FunWallet } from "@fun-wallet/sdk"
-const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+import logo from './logo.svg'
+import { ethers } from 'ethers'
+import { useState } from 'react'
+import { FunWallet, AAVEWithdrawal, AccessControlSchema } from "@fun-wallet-dev/sdk"
+
+
+const rpcURL = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+const chainID = '43113' // Fuji testnet ChainID
+const prefundAmt = 0.3
 
 function App() {
-  const handleClick=async ()=>{
-    const aTokenAddress = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2" // Avalanche Fuji AAVE Dai
-    
-    // Create an EOA instance with ethers
-    
-    // With metamask
-    
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
-    const eoa = provider.getSigner();
-    
-    // With privateKey
-    
-    // const privKey = "c5ff68eee74d447b88d5d0dd1d438b37f30a4c0b1e41e9c485c6e2ea282d1489"
-    // // const provider = new ethers.providers.JsonRpcProvider(rpc)
-    // const eoa = new ethers.Wallet(privKey, provider)
+  const [aTokenAddress, setATokenAddress] = useState("0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2") // Avalanche Fuji AAVE Dai
+  const [pkey, setPkey] = useState("") // avax-fuji
+  const [walletType, setWalletType] = useState(false)
 
-    // Create a new FunWallet instance, 
-    const wallet = new FunWallet()
+  const handleClick = async () => {
 
-    // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
-    await wallet.init(eoa, "0", 155)
+    // Create an EOA instance
+    let eoa;
+    if (walletType) { // with metamask
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
+      eoa = provider.getSigner();
+    }
+    else { // with privateKey
+      const provider = new ethers.providers.JsonRpcProvider(rpcURL)
+      eoa = new ethers.Wallet(pkey, provider)
+    }
 
-    // Add the withdraw from aave action to the FunWallet
-    await wallet.addAction("AAVE", aTokenAddress)
+    // Create an access control schema with one action: withdraw a user's funds from Aave
+    const schema = new AccessControlSchema()
+    const withdrawEntirePosition = schema.addAction(AAVEWithdrawal(aTokenAddress))
 
-    /*
-    Deploy the FunWallet with the withdraw from Aave action.
-    User must store the returned executionHash variable to later execure the Aave withdrawal action
-    */
-    const { receipt: deplomentReceipt, executionHash } = await wallet.deployWallet()
-    console.log("Creation Succesful:\n", deplomentReceipt)
+    // Create a FunWallet with the above access control schema, prefunded with prefundAmt AVAX
+    const wallet = new FunWallet(eoa, schema, prefundAmt, chainID)
 
-    /* 
-    Deploy a transaction approving the FunWallet to move the aave tokens from the EOA to the
-    Aave smart contract.
-    */
-    const approveReceipt = await wallet.deployTokenApprovalTx()
-    console.log("Approval Succesful:\n", approveReceipt)
+    // Deploy the FunWallet
+    const walletDeployReceipt = await wallet.deploy()
+    console.log("Creation Succesful:\n", walletDeployReceipt)
 
-    // After some time, execute the Aave withdrawal action
-    const executionReceipt = await FunWallet.executeAction(executionHash)
-    console.log("Execution Succesful:\n", executionReceipt)
+    // Create a tx that exits an EOA's Aave poisition to be called at a later point
+    const aaveActionTx = await wallet.createActionTx(withdrawEntirePosition)
+
+    // Create & deploy a tx that gives the FunWallet authorization to close the EOA's Aave position
+    const tokenApprovalReceipt = await wallet.deployTokenApproval(aTokenAddress)
+    console.log("Approval Succesful:\n", tokenApprovalReceipt)
+
+    // After some time, deploy the Aave withdrawal action
+    const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx)
+    console.log("Execution Succesful:\n", aaveWithdrawalReceipt)
+
   }
+
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        
-         <button onClick={handleClick}>
-          test
-         </button>
+        <div>
+          <label>Click to switch</label>
+          <button className="data-button" onClick={() => { setWalletType(!walletType) }}>{walletType ? "Using Metamask" : "Using Private Key"}</button>
+        </div>
+        {!walletType &&
+          <input placeholder='Enter Private Key. KEYS ARE NOT STORED OR SAVED' value={pkey} onChange={({ target }) => { setPkey(target.value) }} className="data-input" />
+        }
+        <label>AToken Address: Default AaveDai</label>
+        <input value={aTokenAddress} onChange={({ target }) => { setATokenAddress(target.value) }} className="data-input" />
+        <button onClick={handleClick} className="data-button">
+          Run Test
+        </button>
       </header>
     </div>
   );

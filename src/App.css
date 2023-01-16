@@ -3,14 +3,34 @@
 }
 
 .App-logo {
-  height: 40vmin;
+  height: 20vmin;
   pointer-events: none;
+  margin: 20px;
+
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.data-input {
+  height: 30px;
+  width: 600px;
+  font-size: 20px;
+  background-color: #282c34;
+  outline: none;
+  border: 1px solid white;
+  color: white;
+  border-radius: 4px;
+  padding: 4px;
+  margin: 10px;
+}
+
+.data-button {
+  font-size: 20px;
+  background-color: #282c34;
+  outline: none;
+  border: 1px solid white;
+  color: white;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 10px;
 }
 
 .App-header {
@@ -32,6 +52,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
