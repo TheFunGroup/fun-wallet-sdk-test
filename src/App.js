@@ -3,6 +3,7 @@ import logo from './logo.svg'
 import { ethers } from 'ethers'
 import { useState } from 'react'
 import { FunWallet, FunWalletConfig, Modules } from "@fun-wallet/sdk";
+import { EoaAaveWithdrawal } from '@fun-wallet/sdk/src/modules';
 // import { FunWallet, FunWalletConfig, Modules } from "./fun-wallet-dev/sdk/index";
 
 const getBalance = async (wallet) => {
@@ -35,62 +36,85 @@ function App() {
 
   const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
     const transfer = new Modules.TokenTransfer()
-
     await wallet.addModule(transfer)
     const transferActionTx = await transfer.createTransferTx(to, amount, { address: tokenAddr })
     const receipt = await wallet.deployTx(transferActionTx)
     console.log(receipt)
 
-}
+  }
 
-  const handleClick = async () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
-    const eoa = provider.getSigner();
-
-
-    const config = new FunWalletConfig(eoa, chainID, PREFUND_AMT);
-    console.log("config111111", config)
-    console.log(await config.getChainInfo())
-    const wallet = new FunWallet(config, API_KEY);
-    await wallet.init()
-    console.log(wallet.address)
-    await walletTransferERC(wallet, "0xDc054C4C5052F0F0c28AA8042BB333842160AEA2", "100", USDC_AVAX_ADDR) //1000000 = 1usdc
-
-    // const eoaAaveWithdrawalModule = new Modules.EoaAaveWithdrawal();
-    // wallet.addModule(eoaAaveWithdrawalModule);
-
-    // const deployWalletReceipt = await wallet.deploy();
-
-    // const moduleRequiredPreTxs = eoaAaveWithdrawalModule.getPreExecTxs(deployWalletReceipt.address);
-    // const reqPreTxReceipt = await FunWallet.deployTxs(moduleRequiredPreTxs);
-    // console.log(reqPreTxReceipt)
-
-    // const aaveWithdrawTx = await eoaAaveWithdrawalModule.createWithdrawTx(TOKEN_ADDRESS, wallet.eoa.address, WITHDRAW_AMOUNT)
-    // const aaveWithdrawalReceipt = await FunWallet.deployTx(aaveWithdrawTx);
-    // console.log(aaveWithdrawalReceipt)
+  const transferToken = async () => {
+    if (window.ethereum.networkVersion !== "43113") {
+      console.log('hi')
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: ethers.utils.hexlify(43113) }]
+        });
+      } catch (err) {
+          // This error code indicates that the chain has not been added to MetaMask
+        if (err.code === 4902) {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainName: 'Avalanche Fuji',
+                chainId: ethers.utils.hexlify(43113),
+                nativeCurrency: { name: 'AVAX', decimals: 18, symbol: 'AVAX' },
+                rpcUrls: [AVAX_RPC_URL]
+              }
+            ]
+          });
+        }
+      }
+    }
+    try{
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
+      const eoa = provider.getSigner();
+  
+      const config = new FunWalletConfig(eoa, chainID, PREFUND_AMT);
+      console.log("config111111", config)
+      console.log(await config.getChainInfo())
+      const wallet = new FunWallet(config, API_KEY);
+      await wallet.init()
+      console.log(wallet.address)
+      await walletTransferERC(wallet, "0xDc054C4C5052F0F0c28AA8042BB333842160AEA2", "100", USDC_AVAX_ADDR) //1000000 = 1usdc
+    }
+    catch(e){
+      console.log(e)
+      alert("error, check console")
+    }
+    
   }
 
   //outdated stuff
   const [aTokenAddress, setATokenAddress] = useState("0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2") // Avalanche Fuji AAVE Dai
   const [pkey, setPkey] = useState("") // avax-fuji
   const [walletType, setWalletType] = useState(false)
+
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <div>
+        {/* <div>
           <label>Click to switch</label>
           <button className="data-button" onClick={() => { setWalletType(!walletType) }}>{walletType ? "Using Metamask" : "Using Private Key"}</button>
-        </div>
-        {!walletType &&
+        </div> */}
+        {/* {!walletType &&
           <input placeholder='Enter Private Key. KEYS ARE NOT STORED OR SAVED' value={pkey} onChange={({ target }) => { setPkey(target.value) }} className="data-input" />
-        }
-        <label>AToken Address: Default AaveDai</label>
-        <input value={aTokenAddress} onChange={({ target }) => { setATokenAddress(target.value) }} className="data-input" />
-        <button onClick={handleClick} className="data-button">
+        } */}
+        {/* <label>AToken Address: Default AaveDai</label> */}
+        {/* <input value={aTokenAddress} onChange={({ target }) => { setATokenAddress(target.value) }} className="data-input" /> */}
+        
+        <button onClick={transferToken} className="data-button">
           Run Test
         </button>
+        
+        <button onClick={EoaAaveWithdrawal} className="data-button">
+          Run Test
+        </button>
+
       </header>
     </div>
   );
