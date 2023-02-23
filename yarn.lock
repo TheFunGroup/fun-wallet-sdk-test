@@ -2126,9 +2126,9 @@
   "resolved" "https://registry.npmjs.org/@firebase/webchannel-wrapper/-/webchannel-wrapper-0.6.2.tgz"
   "version" "0.6.2"
 
-"@fun-wallet-dev/sdk@../wallet-sdk-v1":
+"@fun-wallet-dev/sdk@file:../wallet-sdk-v1":
   "resolved" "file:../wallet-sdk-v1"
-  "version" "1.1.2"
+  "version" "0.1.1"
   dependencies:
     "@account-abstraction/contracts" "^0.4.0"
     "@account-abstraction/sdk" "^0.4.0"
@@ -2148,10 +2148,10 @@
     "node-fetch" "^2.0.0"
     "prettier" "^2.8.4"
 
-"@fun-wallet/sdk@^1.1.0":
-  "integrity" "sha512-GYRmUBprgmw4CXRCrpnCX13gscjfORRczqbRZXaMcrVT4ikdVty4YVqJ+HZiT1SwXbPfEjmN5VH76+3zqnfWNg=="
-  "resolved" "https://registry.npmjs.org/@fun-wallet/sdk/-/sdk-1.1.0.tgz"
-  "version" "1.1.0"
+"@fun-wallet/sdk@^0.1.1":
+  "integrity" "sha512-IfsSwZdrtsJJR3/fdsxkk17I82MS+zEuQ6JtSMyvpfJoEbYjCrEK369eCdRkp7uxREXvqfmKafCj5/JqgibhBQ=="
+  "resolved" "https://registry.npmjs.org/@fun-wallet/sdk/-/sdk-0.1.1.tgz"
+  "version" "0.1.1"
   dependencies:
     "@account-abstraction/contracts" "^0.4.0"
     "@account-abstraction/sdk" "^0.4.0"

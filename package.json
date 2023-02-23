@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@fun-wallet-dev/sdk": "../wallet-sdk-v1",
-    "@fun-wallet/sdk": "^1.1.0",
+    "@fun-wallet-dev/sdk": "file:../wallet-sdk-v1",
+    "@fun-wallet/sdk": "^0.1.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",

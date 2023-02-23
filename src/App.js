@@ -2,8 +2,10 @@ import './App.css';
 import logo from './logo.svg'
 import { ethers } from 'ethers'
 import { useState } from 'react'
-import { FunWallet, FunWalletConfig, Modules } from "@fun-wallet/sdk";
-import { EoaAaveWithdrawal } from '@fun-wallet/sdk/src/modules';
+import { FunWallet, FunWalletConfig, Modules, Paymasters } from "@fun-wallet/sdk";
+const { EoaAaveWithdrawal, TokenSwap } = Modules;
+const { USDCPaymaster, PaymasterSponsorInterface } = Paymasters;
+
 // import { FunWallet, FunWalletConfig, Modules } from "./fun-wallet-dev/sdk/index";
 
 const getBalance = async (wallet) => {
@@ -40,19 +42,17 @@ function App() {
     const transferActionTx = await transfer.createTransferTx(to, amount, { address: tokenAddr })
     const receipt = await wallet.deployTx(transferActionTx)
     console.log(receipt)
-
   }
 
-  const transferToken = async () => {
+  const transferTokenAvax = async () => {
     if (window.ethereum.networkVersion !== "43113") {
-      console.log('hi')
       try {
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: ethers.utils.hexlify(43113) }]
         });
       } catch (err) {
-          // This error code indicates that the chain has not been added to MetaMask
+        // This error code indicates that the chain has not been added to MetaMask
         if (err.code === 4902) {
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
@@ -68,24 +68,147 @@ function App() {
         }
       }
     }
-    try{
+    try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
       const eoa = provider.getSigner();
-  
+      console.log(eoa)
       const config = new FunWalletConfig(eoa, chainID, PREFUND_AMT);
-      console.log("config111111", config)
-      console.log(await config.getChainInfo())
       const wallet = new FunWallet(config, API_KEY);
       await wallet.init()
-      console.log(wallet.address)
+      console.log("Fun wallet address", wallet.address)
       await walletTransferERC(wallet, "0xDc054C4C5052F0F0c28AA8042BB333842160AEA2", "100", USDC_AVAX_ADDR) //1000000 = 1usdc
     }
-    catch(e){
+    catch (e) {
       console.log(e)
       alert("error, check console")
     }
+  }
+  const transferTokenFork = async () => {
+    const chainID = "31337"
+    const PREFUND_AMT = 0.3
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
+    const eoa = provider.getSigner();
+    console.log(eoa)
+
+    const config = new FunWalletConfig(eoa, chainID, PREFUND_AMT);
+    const wallet = new FunWallet(config, API_KEY);
+    await wallet.init()
+    console.log("Fun wallet address", wallet.address)
     
+    await walletTransferERC(wallet, "0x6B175474E89094C44Da98b954EedeAC495271d0F", "10000", USDC_AVAX_ADDR) //1000000 = 1usdc
+  }
+
+  const aaveWithdrawal = async () => {
+    // An internal Fun RPC for customer testing
+    const rpc = "http://localhost:8545";
+
+    // Note that the key here will be exposed and should never be used in production
+    // const provider = new ethers.providers.JsonRpcProvider(rpc);
+    // const eoa = new ethers.Wallet(PRIV_KEY, provider);
+
+
+    // To create an EOA instance with an external wallet (e.g MetaMask) do this instead;
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
+    const eoa = provider.getSigner();
+
+
+    // Create a FunWallet
+    const chainID = "31337";
+    const prefundAmt = 0.3; // ether
+    const API_KEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"; // Get your API key from app.fun.xyz/api-key
+
+    const config = new FunWalletConfig(eoa, chainID, prefundAmt);
+    const wallet = new FunWallet(config, API_KEY);
+
+    // Gather data asynchronously from onchain resources to get expected wallet data
+    await wallet.init();
+    const eoaAaveWithdrawalModule = new EoaAaveWithdrawal();
+    await wallet.addModule(eoaAaveWithdrawalModule);
+
+    const deployWalletReceipt = await wallet.deploy();
+    console.log(deployWalletReceipt)
+    // Address of aDAI on mainnet
+    const TOKEN_ADDRESSS = "0x028171bCA77440897B824Ca71D1c56caC55b68A3";
+    // // Use max int to withdraw the entire deposit
+    const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
+
+    const moduleRequiredPreTxs = await eoaAaveWithdrawalModule.getPreExecTxs(TOKEN_ADDRESSS, WITHDRAW_AMOUNT);
+    console.log(moduleRequiredPreTxs)
+    const reqPreTxReceipt = await wallet.deployTxs(moduleRequiredPreTxs);
+    console.log(reqPreTxReceipt)
+
+    const aaveWithdrawTx = await eoaAaveWithdrawalModule.createWithdrawTx(TOKEN_ADDRESSS, await wallet.eoa.getAddress(), WITHDRAW_AMOUNT)
+    console.log(aaveWithdrawTx)
+
+    const aaveWithdrawalReceipt = await wallet.deployTx(aaveWithdrawTx);
+    console.log(aaveWithdrawalReceipt)
+  }
+
+  const swaps = async () => {
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
+    const eoa = provider.getSigner();
+
+    const chainID = "31337";
+    const prefundAmt = 0.3; // ether
+    const API_KEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"; // Get your API key from app.fun.xyz/api-key
+
+    const config = new FunWalletConfig(eoa, chainID, prefundAmt);
+    const wallet = new FunWallet(config, API_KEY);
+
+    // Gather data asynchronously from onchain resources to get expected wallet data
+    await wallet.init();
+
+    const tokenSwapModule = new TokenSwap();
+    await wallet.addModule(tokenSwapModule);
+
+    const deployWalletReceipt = await wallet.deploy();
+    console.log(deployWalletReceipt)
+
+    const tokenIn = { type: 0, symbol: "weth", chainId: chainID }
+    const tokenOut = { type: 1, address: "0x6B175474E89094C44Da98b954EedeAC495271d0F" }
+
+    // This particular transaction has a 5% slippage limit (specified by the parameters 5 & 100)
+    const swapTx = await tokenSwapModule.createSwapTx(tokenIn, tokenOut, 60, wallet.address, 5, 100)
+    const aaveWithdrawalReceipt = await wallet.deployTx(swapTx);
+    console.log(aaveWithdrawalReceipt)
+
+  }
+  const paymaster = async () => {
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
+    const eoa = provider.getSigner();
+
+    const chainID = "31337";
+    const prefundAmt = 0.3; // ether
+    const API_KEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"; // Get your API key from app.fun.xyz/api-key
+
+    // const paymaster = new USDCPaymaster(paymasterAddress, sponsorAddress)
+    // const config = new FunWalletConfig(eoa, chainID, prefundAmt, "", paymaster);
+    // const wallet = new FunWallet(config, API_KEY);
+
+    // // Gather data asynchronously from onchain resources to get expected wallet data
+    // await wallet.init();
+
+    // const paymasterInterface = new PaymasterSponsorInterface(eoa)
+    // await paymasterInterface.init()
+
+    // // 5. Add a Eth or Native Token Deposit Into Your Sponsor Account
+
+    // await paymasterInterface.addEthDepositForSponsor(value, eoa.address)
+    // await paymasterInterface.lockTokenDeposit()
+
+    // // 6. Allow Users to Use Your Sponsor Account
+
+    // await paymasterInterface.setWhitelistMode(true)
+
+    // const postBalance = await paymasterInterface.getEthDepositInfoForSponsor(eoa.address)
+    // console.log("paymasterBalance: ", postBalance.toString())
+
   }
 
   //outdated stuff
@@ -106,13 +229,25 @@ function App() {
         } */}
         {/* <label>AToken Address: Default AaveDai</label> */}
         {/* <input value={aTokenAddress} onChange={({ target }) => { setATokenAddress(target.value) }} className="data-input" /> */}
-        
-        <button onClick={transferToken} className="data-button">
-          Run Test
+
+        <button onClick={transferTokenAvax} className="data-button">
+          Run Transfer Token Test on Avalanche Fuji
         </button>
-        
-        <button onClick={EoaAaveWithdrawal} className="data-button">
-          Run Test
+
+        <button onClick={transferTokenFork} className="data-button">
+          Run Transfer Token Test on Fork
+        </button>
+
+        <button onClick={aaveWithdrawal} className="data-button">
+          Run Aave Withdrawal Test on Fork
+        </button>
+
+        <button onClick={swaps} className="data-button">
+          Run Swap Test on Fork
+        </button>
+
+        <button onClick={paymaster} className="data-button">
+          Run Paymaster Test on Fork
         </button>
 
       </header>
