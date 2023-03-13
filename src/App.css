@@ -5,14 +5,14 @@
 .App-logo {
   height: 20vmin;
   pointer-events: none;
-  margin: 20px;
+  margin: 10px;
 
 }
 
 .data-input {
   height: 30px;
   width: 600px;
-  font-size: 20px;
+  font-size: 10px;
   background-color: #282c34;
   outline: none;
   border: 1px solid white;
@@ -31,16 +31,54 @@
   border-radius: 4px;
   padding: 10px;
   margin: 10px;
-  
+
 }
 
-.data-button:hover{
-  background-color:white;
-  color:black;
-  transition:0.5s;
-  cursor:pointer;
+.data-button:hover {
+  background-color: white;
+  color: black;
+  transition: 0.5s;
+  cursor: pointer;
 }
 
+.gallery {
+  border: 30px;
+
+}
+
+.picture {
+  width: 260px;
+  height: 180px;
+  padding: 15px;
+}
+
+.picture:hover {
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.picture-opaque {
+  width: 260px;
+  height: 180px;
+  padding: 15px;
+  opacity: 0.5;
+}
+
+.log-box {
+  border: 1px solid white;
+  border-radius: 4px;
+  padding: 15px;
+  min-width: 100px;
+  display: inline-block;
+  margin:0px;
+  width:40%;
+}
+
+.log-message{
+  padding:0px;
+  margin:10px;
+  size:12px;
+}
 .App-header {
   background-color: #282c34;
   min-height: 100vh;

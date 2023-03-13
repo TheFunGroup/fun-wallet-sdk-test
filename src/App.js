@@ -36,19 +36,65 @@ function App() {
   const TOKEN_ADDRESS = DAI_ADDR
   const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
 
-  const paymaster = async () =>{
+  const paymaster = async () => {
+    switch (picture) {
+      case 0:
+        alert("No image selected");
+        return
+      case 1:
+        // updateLogs([
+        //   ...logs,
+        //   "Fun Wallet Created"
+        // ])
+      case 2:
 
+      case 3:
+
+    }
   }
+  const images = [
+    "https://mclaren-assets.infiniteworld.com/assets-web/FINAL_MCL_P1_Honorary_A_3Q_V001_NapierGreen_comp_v04_no_graphic_1400x1120.png",
+    "https://www.ledgerinsights.com/wp-content/uploads/2022/03/mclaren.jpg",
+    "https://raritysniper.com/news/wp-content//uploads/2022/05/supercar-maker-mclaren-to-launch-nft-collection.jpg"
+  ]
 
+  const [logs, updateLogs] = useState([])
+  const [picture, updatePicture] = useState(0)
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        
+
         <h3>Try out <a href="https://docs.fun.xyz/" target="_blank">Fun SDK</a> v0.1.2</h3>
+        <p>Pick NFT to mint:</p>
+        <div className="gallery" >
+          {
+            images.map((image, i) => (
+              <img onClick={() => { updatePicture(i + 1) }} className={i + 1 == picture ? "picture-opaque" : "picture"} src={image} alt="Mclaren" />
+            ))
+          }
+        </div>
         <button onClick={paymaster} className="data-button">
           Mint NFT from Paymaster
         </button>
+        {
+          // console.log(logs.length)
+          logs.length == 0 ? (<div></div>) : (
+            <div style={{margin:"20px"}}>
+              <p>Logs:</p>
+              <div className="log-box" >
+                {
+                  logs.map((logELement, i) => (
+                    <h6 className="log-message">{`${i+1}: ${logELement}`}</h6>
+                  ))
+                }
+              </div>
+            </div>
+
+          )
+        }
+
+        {/* logging */}
 
       </header>
     </div>
