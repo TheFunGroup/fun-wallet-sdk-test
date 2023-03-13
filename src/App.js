@@ -40,6 +40,7 @@ function App() {
     const transfer = new Modules.TokenTransfer()
     await wallet.addModule(transfer)
     const transferActionTx = await transfer.createTransferTx(to, amount, { address: tokenAddr })
+    console.log(transferActionTx)
     const receipt = await wallet.deployTx(transferActionTx)
     console.log(receipt)
   }
@@ -73,7 +74,7 @@ function App() {
       await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
       const eoa = provider.getSigner();
       console.log(eoa)
-      const config = new FunWalletConfig(eoa, chainID, PREFUND_AMT);
+      const config = new FunWalletConfig(eoa, chainID, 0);
       const wallet = new FunWallet(config, API_KEY);
       await wallet.init()
       console.log("Fun wallet address", wallet.address)
@@ -84,6 +85,18 @@ function App() {
       alert("error, check console")
     }
   }
+  const transferTokenGoerli = async()=>{
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
+    const eoa = provider.getSigner();
+    console.log(eoa)
+    const config = new FunWalletConfig(eoa, "5", 0);
+    const wallet = new FunWallet(config, API_KEY);
+    await wallet.init()
+    console.log("Fun wallet address", wallet.address)
+    await walletTransferERC(wallet, "0xDc054C4C5052F0F0c28AA8042BB333842160AEA2", "100", "0x07865c6E87B9F70255377e024ace6630C1Eaa37F") //1000000 = 1usdc
+  }
+
   const transferTokenFork = async () => {
     const chainID = "31337"
     const PREFUND_AMT = 0.3
@@ -133,6 +146,53 @@ function App() {
     console.log(deployWalletReceipt)
     // Address of aDAI on mainnet
     const TOKEN_ADDRESSS = "0x028171bCA77440897B824Ca71D1c56caC55b68A3";
+    // // Use max int to withdraw the entire deposit
+    const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
+
+    const moduleRequiredPreTxs = await eoaAaveWithdrawalModule.getPreExecTxs(TOKEN_ADDRESSS, WITHDRAW_AMOUNT);
+    console.log(moduleRequiredPreTxs)
+    const reqPreTxReceipt = await wallet.deployTxs(moduleRequiredPreTxs);
+    console.log(reqPreTxReceipt)
+
+    const aaveWithdrawTx = await eoaAaveWithdrawalModule.createWithdrawTx(TOKEN_ADDRESSS, await wallet.eoa.getAddress(), WITHDRAW_AMOUNT)
+    console.log(aaveWithdrawTx)
+
+    const aaveWithdrawalReceipt = await wallet.deployTx(aaveWithdrawTx);
+    console.log(aaveWithdrawalReceipt)
+  }
+
+  const aaveWithdrawalGoerli = async () => {
+    // An internal Fun RPC for customer testing
+    const rpc = "https://goerli.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7";
+
+    // Note that the key here will be exposed and should never be used in production
+    // const provider = new ethers.providers.JsonRpcProvider(rpc);
+    // const eoa = new ethers.Wallet(PRIV_KEY, provider);
+
+
+    // To create an EOA instance with an external wallet (e.g MetaMask) do this instead;
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
+    const eoa = provider.getSigner();
+
+
+    // Create a FunWallet
+    const chainID = "5";
+    const prefundAmt = 0.1; // ether
+    const API_KEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"; // Get your API key from app.fun.xyz/api-key
+
+    const config = new FunWalletConfig(eoa, chainID, prefundAmt);
+    const wallet = new FunWallet(config, API_KEY);
+
+    // Gather data asynchronously from onchain resources to get expected wallet data
+    await wallet.init();
+    const eoaAaveWithdrawalModule = new EoaAaveWithdrawal();
+    await wallet.addModule(eoaAaveWithdrawalModule);
+
+    const deployWalletReceipt = await wallet.deploy();
+    console.log(deployWalletReceipt)
+    // Address of ausdc on goerli
+    const TOKEN_ADDRESSS = "0x935c0F6019b05C787573B5e6176681282A3f3E05";
     // // Use max int to withdraw the entire deposit
     const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
 
@@ -233,13 +293,19 @@ function App() {
         <button onClick={transferTokenAvax} className="data-button">
           Run Transfer Token Test on Avalanche Fuji
         </button>
-
+        <button onClick={transferTokenGoerli} className="data-button">
+          Run Transfer Token Test on Ethereum Goerli
+        </button>
         <button onClick={transferTokenFork} className="data-button">
           Run Transfer Token Test on Fork
         </button>
 
         <button onClick={aaveWithdrawal} className="data-button">
           Run Aave Withdrawal Test on Fork
+        </button>
+
+        <button onClick={aaveWithdrawalGoerli} className="data-button">
+          Run Aave Withdrawal Test on Goerli
         </button>
 
         <button onClick={swaps} className="data-button">

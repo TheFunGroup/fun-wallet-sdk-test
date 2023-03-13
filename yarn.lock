@@ -2618,7 +2618,7 @@
   dependencies:
     "eslint-scope" "5.1.1"
 
-"@noble/hashes@~1.2.0", "@noble/hashes@1.2.0":
+"@noble/hashes@^1.2.0", "@noble/hashes@~1.2.0", "@noble/hashes@1.2.0":
   "integrity" "sha512-FZfhjEDbT5GRswV3C6uvLPHMiVD6lQBmpoX5+eSiPaMTXte/IKqI5dykDxzZB/WBeK/CDuQRBWarPdi3FNY2zQ=="
   "resolved" "https://registry.npmjs.org/@noble/hashes/-/hashes-1.2.0.tgz"
   "version" "1.2.0"
@@ -4924,6 +4924,13 @@
   "integrity" "sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA=="
   "resolved" "https://registry.npmjs.org/binary-extensions/-/binary-extensions-2.2.0.tgz"
   "version" "2.2.0"
+
+"bip39@^3.1.0":
+  "integrity" "sha512-c9kiwdk45Do5GL0vJMe7tS95VjCii65mYAH7DfWl3uW8AVzXKQVUm64i3hzVybBDMp9r7j9iNxR85+ul8MdN/A=="
+  "resolved" "https://registry.npmjs.org/bip39/-/bip39-3.1.0.tgz"
+  "version" "3.1.0"
+  dependencies:
+    "@noble/hashes" "^1.2.0"
 
 "bip39@3.0.4":
   "integrity" "sha512-YZKQlb752TrUWqHWj7XAwCSjYEgGAk+/Aas3V7NyjQeZYsztO8JnQUaCWhcnL4T+jL8nvB8typ2jRPzTlgugNw=="
