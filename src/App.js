@@ -289,7 +289,7 @@ function App() {
         } */}
         {/* <label>AToken Address: Default AaveDai</label> */}
         {/* <input value={aTokenAddress} onChange={({ target }) => { setATokenAddress(target.value) }} className="data-input" /> */}
-
+        <h3>Try out <a href="https://docs.fun.xyz/">Fun SDK</a> v0.1.2</h3>
         <button onClick={transferTokenAvax} className="data-button">
           Run Transfer Token Test on Avalanche Fuji
         </button>
