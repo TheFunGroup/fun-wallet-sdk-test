@@ -50,16 +50,19 @@
   width: 260px;
   height: 180px;
   padding: 15px;
+  transition: all 0.3s;
 }
 
 .picture:hover {
   opacity: 0.5;
   cursor: pointer;
+  width: 300px;
+  height: 207px;
 }
 
 .picture-opaque {
-  width: 260px;
-  height: 180px;
+  width: 300px;
+  height: 207px;
   padding: 15px;
   opacity: 0.5;
 }
@@ -70,15 +73,16 @@
   padding: 15px;
   min-width: 100px;
   display: inline-block;
-  margin:0px;
-  width:40%;
+  margin: 0px;
+  width: 40%;
 }
 
-.log-message{
-  padding:0px;
-  margin:10px;
-  size:12px;
+.log-message {
+  padding: 0px;
+  margin: 10px;
+  size: 12px;
 }
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
