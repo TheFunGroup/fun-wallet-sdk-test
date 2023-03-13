@@ -45,7 +45,7 @@ function App() {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         
-        <h3>Try out <a href="https://docs.fun.xyz/">Fun SDK</a> v0.1.2</h3>
+        <h3>Try out <a href="https://docs.fun.xyz/" target="_blank">Fun SDK</a> v0.1.2</h3>
         <button onClick={paymaster} className="data-button">
           Mint NFT from Paymaster
         </button>
